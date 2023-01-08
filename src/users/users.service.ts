@@ -9,17 +9,23 @@ export class UsersService {
 
     constructor(@InjectRepository(User) private userRepository: Repository<User>) { }
 
-    async findUsers(_where: FindUsersParams) {
+    async findUsers(_where: FindUsersParams): Promise<User[]> {
         return await this.userRepository.find({
             where: _where
         });
     }
 
-    async findAll() {
+    async findOne(param: FindUsersParams): Promise<User> {
+        return await this.userRepository.findOne({ where: param });
+
+    }
+
+
+    async findAll(): Promise<User[]> {
         return await this.userRepository.find();
     }
 
-    async createUser(data: CreateUserParams) {
+    async createUser(data: CreateUserParams): Promise<User> {
         const user = this.userRepository.create({ ...data });
         await this.userRepository.save(user);
         return user;
@@ -29,11 +35,11 @@ export class UsersService {
         return await this.userRepository.update({ id }, { ...data });
     }
 
-    async inactivateUser(id: string) {
+    async inactivateUser(id: string): Promise<void> {
         await this.userRepository.update({ id }, { boInativo: 1 });
     }
 
-    async deleteUser(id: string) {
+    async deleteUser(id: string): Promise<void> {
         await this.userRepository.delete({ id });
     }
 
