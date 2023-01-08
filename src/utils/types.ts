@@ -10,3 +10,11 @@ export type UpdateUserParams = {
     boInativo?: number;
     caEstrategiaAutenticacao?: string;
 }
+
+export type FindUsersParams = {
+    id?: string;
+    cnUsuario?: number; 
+    nmUsuario?: string;
+    anEmail?: string;
+    boInativo?: number;
+}

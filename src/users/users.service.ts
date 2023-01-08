@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/typeorm/entities/User';
-import { CreateUserParams, UpdateUserParams } from 'src/utils/types';
+import { CreateUserParams, FindUsersParams, UpdateUserParams } from 'src/utils/types';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -9,11 +9,14 @@ export class UsersService {
 
     constructor(@InjectRepository(User) private userRepository: Repository<User>) { }
 
-    async findUsers() {
+    async findUsers(_where: FindUsersParams) {
         return await this.userRepository.find({
-            where: {
-            boInativo: 0
-        }});
+            where: _where
+        });
+    }
+
+    async findAll() {
+        return await this.userRepository.find();
     }
 
     async createUser(data: CreateUserParams) {

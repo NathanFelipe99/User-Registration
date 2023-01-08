@@ -1,20 +1,25 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Put } from '@nestjs/common';
 import { ICreateUserDTO } from './DTOs/ICreateUserDTO';
 import { IUpdateUserDTO } from './DTOs/IUpdateUserDTO';
+import { IGetUsersDTO } from './DTOs/IGetUsersDTO';
 import { UsersService } from './users.service';
 import { hashSync } from "bcryptjs";
-
 @Controller('users')
 export class UsersController {
     constructor(private usersService: UsersService) {}
     
-    @Get()
-    async getUsers() {
-        const users = this.usersService.findUsers();
+    @Post()
+    async getUsers(@Body() where: IGetUsersDTO) {
+        const users = this.usersService.findUsers(where);
         return users;
     }
+
+    @Get("all")
+    async getAllUsers() {
+        return this.usersService.findAll();
+    }
     
-    @Post()
+    @Post("create")
     async createUser(@Body() data: ICreateUserDTO) {
         const { anSenha, ...userData } = data;
         const hash = hashSync(anSenha, 8);
