@@ -16,7 +16,7 @@ class User {
     @Column({ length: 60, unique: true })
     anEmail: string;
 
-    @Column({ length: 20 })
+    @Column()
     anSenha: string;
 
     @Column({ nullable: true })

@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Put } from '@nestjs/common';
 import { ICreateUserDTO } from './DTOs/ICreateUserDTO';
 import { IUpdateUserDTO } from './DTOs/IUpdateUserDTO';
 import { UsersService } from './users.service';
+import { hashSync } from "bcryptjs";
 
 @Controller('users')
 export class UsersController {
@@ -15,7 +16,12 @@ export class UsersController {
     
     @Post()
     async createUser(@Body() data: ICreateUserDTO) {
-        const user = await this.usersService.createUser(data); 
+        const { anSenha, ...userData } = data;
+        const hash = hashSync(anSenha, 8);
+        const user = await this.usersService.createUser({
+            ...userData,
+            anSenha: hash
+        }); 
         return user;
     }
 
@@ -23,5 +29,14 @@ export class UsersController {
     async updateUser(@Param("id", ParseUUIDPipe) id: string, @Body() data: IUpdateUserDTO) {
         await this.usersService.updateUser(id, data);
     }
-    
+
+    @Patch(":id")
+    async inactivateUser(@Param("id", ParseUUIDPipe) id: string) {
+        await this.usersService.inactivateUser(id);
+    }
+
+    @Delete(":id")
+    async deleteUser(@Param("id", ParseUUIDPipe) id: string) {
+        await this.usersService.deleteUser(id);
+    }
 }
