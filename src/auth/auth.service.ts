@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UnauthorizedException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
-import User from 'src/typeorm/entities/User';
+import { compare } from 'bcryptjs';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
@@ -11,22 +11,26 @@ export class AuthService {
         private jwtService: JwtService
     ) { }
     
-    async validateUser(nmUsuario: string, anSenha: string): Promise<any> {
+    async validateUserCredentials(nmUsuario: string, anSenha: string): Promise<any> {
         const user = await this.usersService.findOne({ nmUsuario });
-        if (!user || user.anSenha !== anSenha) throw new UnauthorizedException("Usuário ou senha inválidos");
-
-        return await this.generateToken(user);
+        
+        if (!user) {
+            throw new UnauthorizedException("Usuário ou senha inválidos");
+        } else {
+            const isPasswordValid = await compare(anSenha, user.anSenha);
+            if (!isPasswordValid) {
+                throw new UnauthorizedException("Usuário ou senha inválidos");
+            } else {
+                return this.loginWithCredentials(user);
+            }
+        }
     }
 
-    async generateToken(payload: User) {
+    async loginWithCredentials(user: any) {
+        const payload = { nmUsuario: user.nmUsuario };
+
         return {
-            access_token: this.jwtService.sign(
-                { cnUsuario: payload.cnUsuario },
-                {
-                    secret: "topSecret512",
-                    expiresIn: "1h"
-                }
-            )
+            access_token: this.jwtService.sign(payload) 
         }
     }
 }
