@@ -1,4 +1,5 @@
-export const wReturnedUserProps = {
+export const returnedUserProps = {
+    id: true,
     cnUsuario: true,
     nmUsuario: true,
     anEmail: true,

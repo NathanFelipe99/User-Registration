@@ -3,12 +3,12 @@ import { ICreateUserDTO } from './DTOs/ICreateUserDTO';
 import { IUpdateUserDTO } from './DTOs/IUpdateUserDTO';
 import { IGetUsersDTO } from './DTOs/IGetUsersDTO';
 import { UsersService } from './users.service';
-import { hashSync } from "bcryptjs";
+
 import { AuthGuard } from '@nestjs/passport';
 @Controller('users')
 export class UsersController {
-    constructor(private usersService: UsersService) {}
-    
+    constructor(private usersService: UsersService) { }
+
     @UseGuards(AuthGuard("jwt"))
     @Post()
     async getUsers(@Body() where: IGetUsersDTO) {
@@ -21,16 +21,11 @@ export class UsersController {
     async getAllUsers() {
         return this.usersService.findAll();
     }
-    
+
     @UseGuards(AuthGuard("jwt"))
     @Post("create")
     async createUser(@Body() data: ICreateUserDTO) {
-        const { anSenha, ...userData } = data;
-        const hash = hashSync(anSenha, 8);
-        const user = await this.usersService.createUser({
-            ...userData,
-            anSenha: hash
-        }); 
+        const user = await this.usersService.createUser({ ...data });
         return user;
     }
 

@@ -3,7 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import User from 'src/typeorm/entities/User';
 import { CreateUserParams, FindUsersParams, UpdateUserParams } from 'src/utils/types';
 import { Repository } from 'typeorm';
-import { wReturnedUserProps } from './DTOs/IReturnedUserPropsDTO';
+import { returnedUserProps } from './DTOs/IReturnedUserPropsDTO';
+import { hashSync } from "bcryptjs";
 @Injectable()
 export class UsersService {
 
@@ -11,50 +12,48 @@ export class UsersService {
 
     async findUsers(_where: FindUsersParams): Promise<User[]> {
         return await this.userRepository.find({
-            select: wReturnedUserProps,
+            select: returnedUserProps,
             where: _where
         });
     }
 
     async findOne(param: FindUsersParams): Promise<User> {
         return await this.userRepository.findOne({
-            select: wReturnedUserProps,
             where: param
         });
     }
 
     async findAll(): Promise<User[]> {
         return await this.userRepository.find({
-            select: wReturnedUserProps
+            select: returnedUserProps
         });
     }
 
     async createUser(data: CreateUserParams): Promise<User> {
-        const user = this.userRepository.create({ ...data });
+        const { anEmail, nmUsuario, anSenha } = data;
+
+        await this.createVerifyExistence(nmUsuario, anEmail);
+
+        const hash = hashSync(anSenha, 8);
+
+        const user = this.userRepository.create({ anSenha: hash, ...data });
         await this.userRepository.save(user);
 
         return this.userRepository.findOne({
-            select: wReturnedUserProps,
+            select: returnedUserProps,
             where: { id: user.id }
         });
     }
 
     async updateUser(id: string, data: UpdateUserParams) {
         const { nmUsuario, anEmail } = data;
-        if (anEmail) {
-            const anEmailExists = await this.userRepository.findOneBy({ anEmail });
-            if (anEmailExists && anEmailExists.id !== id) throw new BadRequestException("Este email já está cadastrado!");
-        }
-
-        if (nmUsuario) {
-            const nmUsuarioExists = await this.userRepository.findOneBy({ nmUsuario });
-            if (nmUsuarioExists && nmUsuarioExists.id !== id) throw new BadRequestException("Este nome de usuário já está cadastrado");
-        }
+        
+        await this.updateVerifyExistence(id, nmUsuario, anEmail);
 
         await this.userRepository.update({ id }, { ...data });
 
         return this.userRepository.findOne({
-            select: wReturnedUserProps,
+            select: returnedUserProps,
             where: { id }
         });
     }
@@ -65,6 +64,30 @@ export class UsersService {
 
     async deleteUser(id: string): Promise<void> {
         await this.userRepository.delete({ id });
+    }
+
+    private async createVerifyExistence(nmUsuario: string, anEmail: string) {
+        const userExists = await this.userRepository.findOne({
+            where: [
+                { nmUsuario },
+                { anEmail }
+            ]
+        });
+
+        if (userExists) throw new BadRequestException("Já existe um usuário com este Email ou CPF");
+    }
+
+    private async updateVerifyExistence(id: string, nmUsuario: string, anEmail: string) {
+        const userExists = await this.userRepository.findOneBy({ id });
+        if (!userExists) throw new BadRequestException("Usuário não encontrado!");
+
+        const nmUsuarioExists = await this.userRepository.findOneBy({ nmUsuario });
+        if (nmUsuarioExists && (nmUsuarioExists.nmUsuario !== userExists.nmUsuario))
+            throw new BadRequestException("Já existe outro usuário com este Nome de Usuário!");
+        
+        const anEmailExists = await this.userRepository.findOneBy({ anEmail });
+        if (anEmailExists && (anEmailExists.id !== userExists.id))
+            throw new BadRequestException("Já existe outro usuário com este Email!");
     }
 
 }
