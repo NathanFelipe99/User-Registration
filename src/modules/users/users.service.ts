@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import User from 'src/typeorm/entities/User';
-import { CreateUserParams, FindUsersParams, UpdateUserParams } from 'src/utils/types';
+import User from 'src/infra/typeorm/entities/User';
+import { CreateUserParams, FindUsersParams, UpdateUserParams } from 'src/shared/utils/types';
 import { Repository } from 'typeorm';
 import { returnedUserProps } from './DTOs/IReturnedUserPropsDTO';
 import { hashSync } from "bcryptjs";
