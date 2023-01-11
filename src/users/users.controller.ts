@@ -3,7 +3,6 @@ import { ICreateUserDTO } from './DTOs/ICreateUserDTO';
 import { IUpdateUserDTO } from './DTOs/IUpdateUserDTO';
 import { IGetUsersDTO } from './DTOs/IGetUsersDTO';
 import { UsersService } from './users.service';
-
 import { AuthGuard } from '@nestjs/passport';
 @Controller('users')
 export class UsersController {

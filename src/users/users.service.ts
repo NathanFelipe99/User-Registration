@@ -31,7 +31,9 @@ export class UsersService {
 
     async createUser(data: CreateUserParams): Promise<User> {
         const { anEmail, nmUsuario, anSenha } = data;
-
+        if (!anEmail || !nmUsuario || !anSenha)
+            throw new BadRequestException("Não foi possível criar novo usuário pois alguma(s) propriedades não foram informadas!");
+        
         await this.createVerifyExistence(nmUsuario, anEmail);
 
         const hash = hashSync(anSenha, 8);
@@ -74,7 +76,7 @@ export class UsersService {
             ]
         });
 
-        if (userExists) throw new BadRequestException("Já existe um usuário com este Email ou CPF");
+        if (userExists) throw new BadRequestException("Já existe um usuário com este Email ou Nome de Usuário!");
     }
 
     private async updateVerifyExistence(id: string, nmUsuario: string, anEmail: string) {
