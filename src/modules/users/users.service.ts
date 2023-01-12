@@ -32,9 +32,9 @@ export class UsersService {
     }
 
     async updateUser(id: string, data: UpdateUserParams) {
-        const { anEmail } = data;
+        const { anEmail, nmUsuario } = data;
 
-        await this.updateVerifyExistence(id, anEmail);
+        await this.updateVerifyExistence(id, anEmail, nmUsuario);
 
         return await this._userRepository.updateUser(id, data);
     }
@@ -47,12 +47,12 @@ export class UsersService {
         await this._userRepository.deleteUser(id);
     }
 
-    private async updateVerifyExistence(id: string, anEmail: string) {
+    private async updateVerifyExistence(id: string, anEmail: string, nmUsuario: string) {
         const userExists = await this.verifyUserExistence(id);
 
-        await this.verifyUserNameExistence(userExists.nmUsuario);
+        nmUsuario && await this.verifyUserNameExistence(nmUsuario, userExists.id);
 
-        await this.verifyUserEmailExistence(anEmail, userExists.id);
+        anEmail && await this.verifyUserEmailExistence(anEmail, userExists.id);
     }
 
     private async verifyUserExistence(id: string): Promise<User> {
@@ -61,18 +61,19 @@ export class UsersService {
         return userExists;
     }
 
-    private async verifyUserNameExistence(nmUsuario: string): Promise<boolean> {
+    private async verifyUserNameExistence(nmUsuario: string, id: string): Promise<boolean> {
         const nmUsuarioExists = await this._userRepository.findOne({ nmUsuario });
-        if (nmUsuarioExists && (nmUsuarioExists.nmUsuario !== nmUsuario))
+        if (nmUsuarioExists && (nmUsuarioExists.id !== id))
             throw new BadRequestException("Já existe outro usuário com este Nome de Usuário!");
+        
         return false;
     }
 
-    private async verifyUserEmailExistence(email: string, id: string): Promise<boolean> {
-        const anEmailExists = await this._userRepository.findOne({ anEmail: email });
+    private async verifyUserEmailExistence(anEmail: string, id: string): Promise<boolean> {
+        const anEmailExists = await this._userRepository.findOne({ anEmail });
         if (anEmailExists && (anEmailExists.id !== id))
             throw new BadRequestException("Já existe outro usuário com este Email!");
-
+        
         return false;
     }
 
