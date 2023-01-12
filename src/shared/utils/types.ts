@@ -1,3 +1,5 @@
+import { IGetUsersDTO } from "src/modules/users/DTOs/IGetUsersDTO";
+
 export type CreateUserParams = {
     nmUsuario: string;
     anEmail: string;
@@ -11,10 +13,4 @@ export type UpdateUserParams = {
     caEstrategiaAutenticacao?: string;
 }
 
-export type FindUsersParams = {
-    id?: string;
-    cnUsuario?: number; 
-    nmUsuario?: string;
-    anEmail?: string;
-    boInativo?: number;
-}
+export type FindUsersParams = IGetUsersDTO | Array<IGetUsersDTO>;
